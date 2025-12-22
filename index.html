@@ -1,0 +1,318 @@
+﻿<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>天才小科學家！問答大挑戰（理科）</title>
+
+<style>
+/* ===== 全頁背景 ===== */
+body{
+  margin:0;
+  min-height:100vh;
+  min-height:100svh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-family:"Noto Sans TC", Arial, sans-serif;
+
+  /* ⬇ 換成「安靜陪伴型背景」 */
+  background:
+    linear-gradient(
+      rgba(255,255,255,0.50),
+      rgba(255,255,255,0.50)
+    ),
+    url("background1.jpg") center/cover no-repeat;
+}
+
+/* ===== 主容器（像一本書頁） ===== */
+#app{
+  width:90%;
+  max-width:560px;
+  background:rgba(255,255,255,0.50);
+  backdrop-filter:blur(8px);
+  border-radius:22px;
+  padding:28px 26px;
+  box-sizing:border-box;
+  box-shadow:0 8px 28px rgba(0,0,0,0.06); 
+}
+
+/* ===== 進度 ===== */
+#progress{
+  font-size:0.85em;
+  color:#7A8A99;
+  margin-bottom:10px;
+}
+
+/* ===== 題目 ===== */
+#question{
+  font-size:1.35em;
+  line-height:1.65;
+  color:#1F2D3D;
+  margin-bottom:20px;
+}
+
+/* ===== 選項（保持直排） ===== */
+.option{
+  width:100%;
+  padding:14px 16px;
+  margin:10px 0;
+  font-size:1em;
+  border-radius:14px;
+  border:1px solid #C3D1DE;
+  background:#fff;
+  cursor:pointer;
+  transition:all .18s ease;
+}
+
+.option:hover{
+  background:#F3F7FB;
+}
+
+.option:disabled{
+  cursor:default;
+  opacity:0.95;
+}
+
+/* 正確 / 錯誤 */
+.correct-border{ border:2px solid #2E8B57 !important; }
+.wrong-border{ border:2px solid #C94A4A !important; }
+
+/* ===== 回饋 ===== */
+#feedback{
+  margin-top:16px;
+  font-size:1.35em;
+  font-weight:600;
+}
+
+.correct{ color:#2E8B57; }
+.incorrect{ color:#C94A4A; }
+
+/* ===== 解說 ===== */
+#explanation{
+  margin-top:10px;
+  font-size:1em;
+  color:#4F5F6F;
+  line-height:1.6;
+}
+
+/* ===== 下一題按鈕 ===== */
+#next{
+  margin-top:22px;
+  padding:12px 22px;
+  font-size:1em;
+  border:none;
+  border-radius:20px;
+  background:#2E8B57;
+  color:#fff;
+  cursor:pointer;
+}
+
+#next:hover{
+  background:#246B45;
+}
+
+/* ===== 完成畫面 ===== */
+#finish{
+  text-align:center;
+}
+
+#finish h2{
+  font-size:1.6em;
+  color:#2F6F4E;
+  margin-bottom:10px;
+}
+
+#finish p{
+  color:#5F6F7E;
+  line-height:1.6;
+}
+
+/* 書封（刻意縮小，變成推薦） */
+#book-cover{
+  max-width:150px;
+  margin:14px auto 10px;
+  display:block;
+}
+
+/* ===== 通路 icon ===== */
+.store-links{
+  display:flex;
+  justify-content:center;
+  gap:20px;
+  margin-top:12px;
+}
+
+.store-links img{
+  width:64px;
+  height:auto;
+  cursor:pointer;
+  opacity:0.9;
+  transition:transform .18s ease, opacity .18s ease;
+}
+
+.store-links img:hover{
+  transform:scale(1.12);
+  opacity:1;
+}
+
+/* ===== 手機 ===== */
+@media (max-width:480px){
+  #app{
+    width:94%;
+    max-width:420px;
+    padding:24px 20px;
+  }
+
+  #question{
+    font-size:1.25em;
+  }
+
+  .option{
+    padding:16px;
+    font-size:1.05em;
+    border-radius:18px;
+  }
+
+  #next{
+    width:100%;
+    padding:16px;
+    font-size:1.1em;
+    border-radius:24px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div id="app">
+  <div id="progress"></div>
+  <div id="question"></div>
+  <div id="options"></div>
+
+  <div id="feedback"></div>
+  <div id="explanation"></div>
+
+  <button id="next" style="display:none;">再來一題 ➜</button>
+</div>
+
+<script>
+const questions = [
+{
+question:"存錢筒的10元硬幣變髒了，泡在檸檬汁裡就能變乾淨，為什麼？",
+options:["檸檬汁包住髒污","檸檬汁的酸會溶解氧化物","被染色"],
+answer:1,
+explanation:"檸檬汁含有酸性，能溶解硬幣表面的氧化物，因此看起來會變乾淨。"
+},
+{
+question:"北極海面的海冰全部融化，海平面會怎樣？",
+options:["上升","下降","不變"],
+answer:2,
+explanation:"浮冰已經排開等量的海水，融化後水位一樣。"
+},
+{
+question:"博物館常使用哪種氣體滅火？",
+options:["氧氣","二氧化碳","氮氣"],
+answer:1,
+explanation:"二氧化碳會降低氧氣濃度，使火焰無法持續燃燒。"
+},
+{
+question:"在宇宙是聽不到聲音的，是跟以下何者有關呢？",
+options:["太陽","重力","空氣"],
+answer:2,
+explanation:"聲音必須靠介質傳遞，宇宙中幾乎沒有空氣。"
+},
+{
+question:"月球的陰影形成兔子圖案，原因是？",
+options:["窪地的陰影","冷卻凝固的熔岩","海洋"],
+answer:1,
+explanation:"月球表面高低不平，形成不同陰影。"
+}
+];
+
+let index=0, correctCount=0;
+const progress=document.getElementById("progress");
+const questionEl=document.getElementById("question");
+const optionsEl=document.getElementById("options");
+const feedback=document.getElementById("feedback");
+const explanationEl=document.getElementById("explanation");
+const nextBtn=document.getElementById("next");
+
+function loadQuestion(){
+  const q=questions[index];
+  progress.textContent=`第 ${index+1} / ${questions.length} 題`;
+  questionEl.textContent=q.question;
+  optionsEl.innerHTML="";
+  feedback.textContent="";
+  explanationEl.textContent="";
+  nextBtn.style.display="none";
+
+  q.options.forEach((text,i)=>{
+    const btn=document.createElement("button");
+    btn.className="option";
+    btn.textContent=text;
+    btn.onclick=()=>checkAnswer(btn,i,q);
+    optionsEl.appendChild(btn);
+  });
+
+  nextBtn.textContent = index===questions.length-1 ? "完成挑戰 ➜" : "再來一題 ➜";
+}
+
+function checkAnswer(btn,selected,q){
+  document.querySelectorAll(".option").forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.answer) b.classList.add("correct-border");
+    if(i===selected && selected!==q.answer) b.classList.add("wrong-border");
+  });
+
+  setTimeout(()=>{
+    if(selected===q.answer){
+      feedback.textContent="✔ 答對了！";
+      feedback.className="correct";
+      correctCount++;
+    }else{
+      feedback.textContent="✘ 答錯了！";
+      feedback.className="incorrect";
+    }
+    explanationEl.textContent=q.explanation;
+    nextBtn.style.display="inline-block";
+  },400);
+}
+
+nextBtn.onclick=()=>{
+  index++;
+  index<questions.length ? loadQuestion() : showFinish();
+};
+
+function showFinish(){
+  document.getElementById("app").innerHTML=`
+    <div id="finish">
+      <h2>🎉 恭喜完成科學挑戰！</h2>
+      <p> 本次表現：<strong>${correctCount} / ${questions.length}</strong> 題答對 👏</p>
+      <p>透過遊戲，培養孩子的理解力與好奇心。</p>
+
+      <p style="margin-top:22px;font-weight:600;color:#6F7F8F;">
+         延伸閱讀推薦
+      </p>
+
+      <img id="book-cover" src="book1.jpg" alt="書籍封面">
+
+      <div class="store-links">
+        <a href="#"><img src="22.jpg"></a>
+        <a href="#"><img src="23.jpg"></a>
+        <a href="#"><img src="24.jpg"></a>
+        <a href="#"><img src="25.jpg"></a>
+      </div>
+
+      <p style="font-size:0.8em;color:#7A8A99;margin-top:6px;">
+        點擊通路即可前往購買
+      </p>
+    </div>
+  `;
+}
+
+loadQuestion();
+</script>
+</body>
+</html>
